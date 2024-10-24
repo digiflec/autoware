@@ -26,3 +26,8 @@ capture/
 
 # Node.js
 node_modules/
+
+#Data
+*.pcap
+*.json
+data

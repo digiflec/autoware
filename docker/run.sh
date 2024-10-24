@@ -91,7 +91,7 @@ parse_arguments() {
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
-        IMAGE="ghcr.io/autowarefoundation/autoware:universe-devel"
+        IMAGE="digiflec/autoware:universe-devel-ciim"
 
         # Set workspace path, if not provided use the current directory
         if [ "$WORKSPACE_PATH" = "" ]; then
@@ -114,7 +114,8 @@ set_variables() {
     else
         # Set image based on option
         IMAGE="ghcr.io/autowarefoundation/autoware:universe"
-
+        echo "Only devel is implemented"
+        exit 1
         # Set map path
         if [ "$MAP_PATH" = "" ]; then
             echo -e "\n------------------------------------------------------------"
@@ -146,7 +147,7 @@ set_gpu_flag() {
 set_x_display() {
     MOUNT_X=""
     if [ "$option_headless" = "false" ]; then
-        MOUNT_X="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix"
+        MOUNT_X="-e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix -v /dev/dri:/dev/dri:ro"
         xhost + >/dev/null
     fi
 }
@@ -178,11 +179,15 @@ main() {
 
     # Launch the container
     set -x
-    docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
+    docker run -it --rm --net=host ${GPU_FLAG} ${MOUNT_X} \
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
         ${WORKSPACE} ${MAP} ${IMAGE} \
         ${LAUNCH_CMD}
 }
 
 # Execute the main script
+# docker run -it --rm --net=host ${GPU_FLAG} ${USER_ID} ${MOUNT_X} \
+#         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
+#         ${WORKSPACE} ${MAP} ${IMAGE} \
+#         ${LAUNCH_CMD}
 main "$@"

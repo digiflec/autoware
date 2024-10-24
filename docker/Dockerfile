@@ -276,18 +276,18 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing
+  # source /opt/ros/"$ROS_DISTRO"/setup.bash \
+  # && source /opt/autoware/setup.bash \
+  # && du -sh ${CCACHE_DIR} && ccache -s \
+  # && colcon build --cmake-args \
+  #   " -Wno-dev" \
+  #   " --no-warn-unused-cli" \
+  #   --merge-install \
+  #   --install-base /opt/autoware \
+  #   --mixin release compile-commands ccache \
+  # && du -sh ${CCACHE_DIR} && ccache -s \
+  # && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
@@ -406,31 +406,52 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
-COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
-COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
-COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
+# COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
+# COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
+# COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/param,target=/autoware/src/param \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/simulator,target=/autoware/src/universe/autoware.universe/simulator \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
-  --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
+# RUN --mount=type=cache,target=${CCACHE_DIR} \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/launcher,target=/autoware/src/launcher \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/param,target=/autoware/src/param \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_component,target=/autoware/src/sensor_component \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/sensor_kit,target=/autoware/src/sensor_kit \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/evaluator,target=/autoware/src/universe/autoware.universe/evaluator \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/launch,target=/autoware/src/universe/autoware.universe/launch \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/simulator,target=/autoware/src/universe/autoware.universe/simulator \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/universe/autoware.universe/tools,target=/autoware/src/universe/autoware.universe/tools \
+#   --mount=type=bind,from=rosdep-universe-depend,source=/autoware/src/vehicle,target=/autoware/src/vehicle \
+#   source /opt/ros/"$ROS_DISTRO"/setup.bash \
+#   && source /opt/autoware/setup.bash \
+#   && du -sh ${CCACHE_DIR} && ccache -s \
+#   && colcon build --cmake-args \
+#     " -Wno-dev" \
+#     " --no-warn-unused-cli" \
+#     --merge-install \
+#     --install-base /opt/autoware \
+#     --mixin release compile-commands ccache \
+#   && du -sh ${CCACHE_DIR} && ccache -s \
+#   && rm -rf /autoware/build /autoware/log
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["/bin/bash"]
+
+FROM universe-devel AS universe-devel-ciim
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ARG ROS_DISTRO
+ENV CCACHE_DIR="/root/.ccache"
+# Install additional packages
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    vim \
+    libflatbuffers-dev \
+    libtins-dev \
+    libpcap-dev \
+    libglfw3-dev \
+    libglew-dev \
+    libspdlog-dev \
+    htop && \ 
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]

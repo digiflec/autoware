@@ -11,7 +11,8 @@ group "default" {
     "universe-vehicle-system-devel",
     "universe-vehicle-system",
     "universe-devel",
-    "universe"
+    "universe",
+    "universe-devel-ciim"
   ]
 }
 
@@ -28,6 +29,7 @@ target "docker-metadata-action-universe-vehicle-system-devel" {}
 target "docker-metadata-action-universe-vehicle-system" {}
 target "docker-metadata-action-universe-devel" {}
 target "docker-metadata-action-universe" {}
+target "docker-metadata-action-universe-devel-ciim" {}
 
 target "base" {
   inherits = ["docker-metadata-action-base"]
@@ -93,6 +95,12 @@ target "universe-devel" {
   inherits = ["docker-metadata-action-universe-devel"]
   dockerfile = "docker/Dockerfile"
   target = "universe-devel"
+}
+
+target "universe-devel-ciim" {
+  inherits = ["docker-metadata-action-universe-devel-ciim"]
+  dockerfile = "docker/Dockerfile"
+  target = "universe-devel-ciim"
 }
 
 target "universe" {

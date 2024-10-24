@@ -11,6 +11,7 @@ print_help() {
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
     echo "  --devel-only    Build devel image only"
+    echo "  --ciim-devel    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -36,6 +37,9 @@ parse_arguments() {
         --devel-only)
             option_devel_only=true
             ;;
+        --ciim-devel)
+            option_ciim_devel=true
+            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -60,6 +64,14 @@ set_cuda_options() {
 set_build_options() {
     if [ "$option_devel_only" = "true" ]; then
         targets=("universe-devel")
+    else
+        targets=()
+    fi
+}
+set_build_options() {
+    if [ "$option_ciim_devel" = "true" ]; then
+        targets=("universe-devel-ciim")
+        echo "setting trargets to ${targets[*]}"
     else
         targets=()
     fi
@@ -134,6 +146,7 @@ build_images() {
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
         --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
+        --set "universe-devel-ciim.tags=digiflec/autoware:universe-devel-ciim$image_name_suffix" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
         "${targets[@]}"
     set +x
