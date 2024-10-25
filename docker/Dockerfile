@@ -64,7 +64,7 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     && cat /rosdep-core-depend-packages.txt
 
 COPY src/universe/external /autoware/src/universe/external
-COPY src/universe/autoware.universe/common /autoware/src/universe/autoware.universe/common
+COPY src/ciim/ciim_perception/universe_common /autoware/src/ciim/ciim_perception/universe_common
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -77,8 +77,8 @@ FROM rosdep-depend AS rosdep-universe-sensing-perception-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/universe/autoware.universe/perception /autoware/src/universe/autoware.universe/perception
-COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
+COPY src/ciim/ciim_perception/universe_perception /autoware/src/ciim/ciim_perception/universe_perception
+# COPY src/universe/autoware.universe/sensing /autoware/src/universe/autoware.universe/sensing
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -94,86 +94,16 @@ RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
     > /rosdep-universe-sensing-perception-exec-depend-packages.txt \
     && cat /rosdep-universe-sensing-perception-exec-depend-packages.txt
 
-FROM rosdep-depend AS rosdep-universe-localization-mapping-depend
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-
-COPY src/universe/autoware.universe/localization /autoware/src/universe/autoware.universe/localization
-COPY src/universe/autoware.universe/map /autoware/src/universe/autoware.universe/map
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-localization-mapping-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-localization-mapping-exec-depend-packages.txt \
-    && cat /rosdep-universe-localization-mapping-exec-depend-packages.txt
-
-FROM rosdep-depend AS rosdep-universe-planning-control-depend
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-
-COPY src/universe/autoware.universe/control /autoware/src/universe/autoware.universe/control
-COPY src/universe/autoware.universe/planning /autoware/src/universe/autoware.universe/planning
-# TODO(youtalk): Remove COPYs when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-COPY src/universe/autoware.universe/map/map_loader /autoware/src/universe/autoware.universe/map/map_loader
-COPY src/universe/autoware.universe/map/autoware_map_projection_loader /autoware/src/universe/autoware.universe/map/autoware_map_projection_loader
-COPY src/universe/autoware.universe/sensing/autoware_pcl_extensions /autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions
-COPY src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor /autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-planning-control-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-planning-control-exec-depend-packages.txt \
-    && cat /rosdep-universe-planning-control-exec-depend-packages.txt
-
-FROM rosdep-depend AS rosdep-universe-vehicle-system-depend
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-
-COPY src/universe/autoware.universe/vehicle /autoware/src/universe/autoware.universe/vehicle
-COPY src/universe/autoware.universe/system /autoware/src/universe/autoware.universe/system
-COPY src/universe/autoware.universe/map/autoware_map_height_fitter /autoware/src/universe/autoware.universe/map/autoware_map_height_fitter
-COPY src/universe/autoware.universe/localization/autoware_pose2twist /autoware/src/universe/autoware.universe/localization/autoware_pose2twist
-RUN rosdep keys --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-vehicle-system-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-depend-packages.txt
-RUN rosdep keys --dependency-types=exec --ignore-src --from-paths src \
-    | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
-    | grep -v '^#' \
-    | sed 's/ \+/\n/g'\
-    | sort \
-    > /rosdep-universe-vehicle-system-exec-depend-packages.txt \
-    && cat /rosdep-universe-vehicle-system-exec-depend-packages.txt
-
 FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
 COPY src/launcher /autoware/src/launcher
-COPY src/param /autoware/src/param
-COPY src/sensor_component /autoware/src/sensor_component
-COPY src/sensor_kit /autoware/src/sensor_kit
-COPY src/universe /autoware/src/universe
-COPY src/vehicle /autoware/src/vehicle
+# COPY src/param /autoware/src/param
+# COPY src/sensor_component /autoware/src/sensor_component
+# COPY src/sensor_kit /autoware/src/sensor_kit
+COPY src/ciim /autoware/src/ciim
+# COPY src/vehicle /autoware/src/vehicle
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -243,7 +173,7 @@ RUN --mount=type=ssh \
 
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/autoware.universe/common,target=/autoware/src/universe/autoware.universe/common \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/ciim/ciim_perception/universe_common,target=/autoware/src/ciim/ciim_perception/universe_common \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
@@ -274,123 +204,24 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
 # hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
-  --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing
-  # source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  # && source /opt/autoware/setup.bash \
-  # && du -sh ${CCACHE_DIR} && ccache -s \
-  # && colcon build --cmake-args \
-  #   " -Wno-dev" \
-  #   " --no-warn-unused-cli" \
-  #   --merge-install \
-  #   --install-base /opt/autoware \
-  #   --mixin release compile-commands ccache \
-  # && du -sh ${CCACHE_DIR} && ccache -s \
-  # && rm -rf /autoware/build /autoware/log
+# RUN --mount=type=cache,target=${CCACHE_DIR} \
+#   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/perception,target=/autoware/src/universe/autoware.universe/perception \
+#   --mount=type=bind,from=rosdep-universe-sensing-perception-depend,source=/autoware/src/universe/autoware.universe/sensing,target=/autoware/src/universe/autoware.universe/sensing
+#   source /opt/ros/"$ROS_DISTRO"/setup.bash \
+#   && source /opt/autoware/setup.bash \
+#   && du -sh ${CCACHE_DIR} && ccache -s \
+#   && colcon build --cmake-args \
+#     " -Wno-dev" \
+#     " --no-warn-unused-cli" \
+#     --merge-install \
+#     --install-base /opt/autoware \
+#     --mixin release compile-commands ccache \
+#   && du -sh ${CCACHE_DIR} && ccache -s \
+#   && rm -rf /autoware/build /autoware/log
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 
-FROM universe-common-devel AS universe-localization-mapping-devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ENV CCACHE_DIR="/root/.ccache"
-
-# Install rosdep dependencies
-COPY --from=rosdep-universe-localization-mapping-depend /rosdep-universe-localization-mapping-depend-packages.txt /tmp/rosdep-universe-localization-mapping-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  apt-get update \
-  && cat /tmp/rosdep-universe-localization-mapping-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
-# hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/localization,target=/autoware/src/universe/autoware.universe/localization \
-  --mount=type=bind,from=rosdep-universe-localization-mapping-depend,source=/autoware/src/universe/autoware.universe/map,target=/autoware/src/universe/autoware.universe/map \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
-
-FROM universe-common-devel AS universe-planning-control-devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ENV CCACHE_DIR="/root/.ccache"
-
-# Install rosdep dependencies
-COPY --from=rosdep-universe-planning-control-depend /rosdep-universe-planning-control-depend-packages.txt /tmp/rosdep-universe-planning-control-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  apt-get update \
-  && cat /tmp/rosdep-universe-planning-control-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
-# hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/control,target=/autoware/src/universe/autoware.universe/control \
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/planning,target=/autoware/src/universe/autoware.universe/planning \
-  # TODO(youtalk): Remove --mount options when https://github.com/autowarefoundation/autoware.universe/issues/8805 is resolved
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/map_loader,target=/autoware/src/universe/autoware.universe/map/map_loader \
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader,target=/autoware/src/universe/autoware.universe/map/autoware_map_projection_loader \
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions,target=/autoware/src/universe/autoware.universe/sensing/autoware_pcl_extensions \
-  --mount=type=bind,from=rosdep-universe-planning-control-depend,source=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor,target=/autoware/src/universe/autoware.universe/sensing/autoware_pointcloud_preprocessor \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
-
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["/bin/bash"]
-
-FROM universe-common-devel AS universe-vehicle-system-devel
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ARG ROS_DISTRO
-ENV CCACHE_DIR="/root/.ccache"
-
-# Install rosdep dependencies
-COPY --from=rosdep-universe-vehicle-system-depend /rosdep-universe-vehicle-system-depend-packages.txt /tmp/rosdep-universe-vehicle-system-depend-packages.txt
-# hadolint ignore=SC2002
-RUN --mount=type=ssh \
-  apt-get update \
-  && cat /tmp/rosdep-universe-vehicle-system-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
-  && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
-
-# hadolint ignore=SC1091
-RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/vehicle,target=/autoware/src/universe/autoware.universe/vehicle \
-  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/system,target=/autoware/src/universe/autoware.universe/system \
-  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter,target=/autoware/src/universe/autoware.universe/map/autoware_map_height_fitter \
-  --mount=type=bind,from=rosdep-universe-vehicle-system-depend,source=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist,target=/autoware/src/universe/autoware.universe/localization/autoware_pose2twist \
-  source /opt/ros/"$ROS_DISTRO"/setup.bash \
-  && source /opt/autoware/setup.bash \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && colcon build --cmake-args \
-    " -Wno-dev" \
-    " --no-warn-unused-cli" \
-    --merge-install \
-    --install-base /opt/autoware \
-    --mixin release compile-commands ccache \
-  && du -sh ${CCACHE_DIR} && ccache -s \
-  && rm -rf /autoware/build /autoware/log
-
-ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["/bin/bash"]
 
 FROM universe-common-devel AS universe-devel
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -405,7 +236,7 @@ RUN --mount=type=ssh \
   && cat /tmp/rosdep-universe-depend-packages.txt | xargs apt-get install -y --no-install-recommends \
   && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* "$HOME"/.cache
 
-COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
+# COPY --from=universe-sensing-perception-devel /opt/autoware /opt/autoware
 # COPY --from=universe-localization-mapping-devel /opt/autoware /opt/autoware
 # COPY --from=universe-planning-control-devel /opt/autoware /opt/autoware
 # COPY --from=universe-vehicle-system-devel /opt/autoware /opt/autoware
@@ -453,6 +284,8 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN pip install boto3 botocore
+WORKDIR /workspace
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["/bin/bash"]
 

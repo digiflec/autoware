@@ -91,7 +91,7 @@ parse_arguments() {
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
-        IMAGE="digiflec/autoware:universe-devel-ciim"
+        IMAGE="autoware:universe-devel-ciim"
 
         # Set workspace path, if not provided use the current directory
         if [ "$WORKSPACE_PATH" = "" ]; then
@@ -152,6 +152,8 @@ set_x_display() {
     fi
 }
 
+# Pass AWS Credentials
+AWS="-v ${HOME}/.aws:/root/.aws"
 # Main script execution
 main() {
     # Parse arguments
@@ -179,7 +181,7 @@ main() {
 
     # Launch the container
     set -x
-    docker run -it --rm --net=host ${GPU_FLAG} ${MOUNT_X} \
+    docker run -it --rm --net=host ${GPU_FLAG} ${MOUNT_X} ${AWS}\
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
         ${WORKSPACE} ${MAP} ${IMAGE} \
         ${LAUNCH_CMD}

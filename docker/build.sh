@@ -146,7 +146,7 @@ build_images() {
         --set "*.args.LIB_DIR=$lib_dir" \
         --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
         --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
-        --set "universe-devel-ciim.tags=digiflec/autoware:universe-devel-ciim$image_name_suffix" \
+        --set "universe-devel-ciim.tags=autoware:universe-devel-ciim$image_name_suffix" \
         --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
         "${targets[@]}"
     set +x
