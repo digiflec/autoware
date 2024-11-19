@@ -54,7 +54,7 @@ RUN --mount=type=ssh \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 # Generate install package lists
-COPY src/core /autoware/src/core
+COPY src/autoware_core /autoware/src/autoware_core
 RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
     | grep -v '^#' \
@@ -63,7 +63,7 @@ RUN rosdep update && rosdep keys --ignore-src --from-paths src \
     > /rosdep-core-depend-packages.txt \
     && cat /rosdep-core-depend-packages.txt
 
-COPY src/universe/external /autoware/src/universe/external
+COPY src/autoware_external /autoware/src/autoware_external
 COPY src/ciim/ciim_perception/universe_common /autoware/src/ciim/ciim_perception/universe_common
 RUN rosdep keys --ignore-src --from-paths src \
     | xargs rosdep resolve --rosdistro ${ROS_DISTRO} \
@@ -98,7 +98,7 @@ FROM rosdep-depend AS rosdep-universe-depend
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG ROS_DISTRO
 
-COPY src/launcher /autoware/src/launcher
+# COPY src/launcher /autoware/src/launcher
 # COPY src/param /autoware/src/param
 # COPY src/sensor_component /autoware/src/sensor_component
 # COPY src/sensor_kit /autoware/src/sensor_kit
@@ -143,7 +143,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   && apt-get autoremove -y && rm -rf "$HOME"/.cache
 
 RUN --mount=type=cache,target=${CCACHE_DIR} \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/core,target=/autoware/src/core \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/autoware_core,target=/autoware/src/autoware_core \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
   && colcon build --cmake-args \
@@ -174,7 +174,7 @@ RUN --mount=type=ssh \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=${CCACHE_DIR} \
   --mount=type=bind,from=rosdep-depend,source=/autoware/src/ciim/ciim_perception/universe_common,target=/autoware/src/ciim/ciim_perception/universe_common \
-  --mount=type=bind,from=rosdep-depend,source=/autoware/src/universe/external,target=/autoware/src/universe/external \
+  --mount=type=bind,from=rosdep-depend,source=/autoware/src/autoware_external,target=/autoware/src/autoware_external \
   source /opt/ros/"$ROS_DISTRO"/setup.bash \
   && source /opt/autoware/setup.bash \
   && du -sh ${CCACHE_DIR} && ccache -s \
