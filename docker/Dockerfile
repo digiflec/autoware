@@ -48,7 +48,22 @@ RUN apt-get update && \
 # Install Python packages
 RUN pip install boto3 botocore
 
+# Downgrade Numpy for MIM Packages
+RUN pip install numpy==1.26.4
 
+# MiM Dependencies
+RUN pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
+RUN pip install -U openmim
+
+RUN mim install mmengine && \
+    mim install 'mmcv<2.2.0' && \
+    mim install 'mmdet>=3.0.0'
+
+# MMDetection3d
+RUN cd / && \
+    git clone https://github.com/open-mmlab/mmdetection3d.git -b dev-1.x && \
+    cd mmdetection3d && \
+    pip install -v -e .
 
 # Cleanup unnecessary files and optimize the image
 # RUN --mount=type=ssh \
