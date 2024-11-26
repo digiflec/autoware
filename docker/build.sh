@@ -10,8 +10,6 @@ print_help() {
     echo "  -h              Display this help message"
     echo "  --no-cuda       Disable CUDA support"
     echo "  --platform      Specify the platform (default: current platform)"
-    echo "  --devel-only    Build devel image only"
-    echo "  --ciim-devel    Build devel image only"
     echo ""
     echo "Note: The --platform option should be one of 'linux/amd64' or 'linux/arm64'."
 }
@@ -34,12 +32,6 @@ parse_arguments() {
             option_platform="$2"
             shift
             ;;
-        --devel-only)
-            option_devel_only=true
-            ;;
-        --ciim-devel)
-            option_ciim_devel=true
-            ;;
         *)
             echo "Unknown option: $1"
             print_help
@@ -57,23 +49,6 @@ set_cuda_options() {
         image_name_suffix=""
     else
         image_name_suffix="-cuda"
-    fi
-}
-
-# Set build options
-set_build_options() {
-    if [ "$option_devel_only" = "true" ]; then
-        targets=("universe-devel")
-    else
-        targets=()
-    fi
-}
-set_build_options() {
-    if [ "$option_ciim_devel" = "true" ]; then
-        targets=("universe-devel-ciim")
-        echo "setting trargets to ${targets[*]}"
-    else
-        targets=()
     fi
 }
 
@@ -122,8 +97,8 @@ clone_repositories() {
     fi
 }
 
-# Build images
-build_images() {
+# Build image
+build_image() {
     # https://github.com/docker/buildx/issues/484
     export BUILDKIT_STEP_LOG_MAX_SIZE=10000000
 
@@ -133,23 +108,22 @@ build_images() {
     echo "Setup args: $setup_args"
     echo "Lib dir: $lib_dir"
     echo "Image name suffix: $image_name_suffix"
-    echo "Targets: ${targets[*]}"
 
     set -x
-    docker buildx bake --load --progress=plain -f "$SCRIPT_DIR/docker-bake.hcl" \
-        --set "*.context=$WORKSPACE_ROOT" \
-        --set "*.ssh=default" \
-        --set "*.platform=$platform" \
-        --set "*.args.ROS_DISTRO=$rosdistro" \
-        --set "*.args.BASE_IMAGE=$base_image" \
-        --set "*.args.SETUP_ARGS=$setup_args" \
-        --set "*.args.LIB_DIR=$lib_dir" \
-        --set "base.tags=ghcr.io/autowarefoundation/autoware:base" \
-        --set "universe-devel.tags=ghcr.io/autowarefoundation/autoware:universe-devel$image_name_suffix" \
-        --set "universe-devel-ciim.tags=autoware:universe-devel-ciim$image_name_suffix" \
-        --set "universe.tags=ghcr.io/autowarefoundation/autoware:universe$image_name_suffix" \
-        "${targets[@]}"
+
+    docker build \
+        --progress=plain \
+        --build-arg ROS_DISTRO="$rosdistro" \
+        --build-arg BASE_IMAGE="$base_image" \
+        --build-arg SETUP_ARGS="$setup_args" \
+        --build-arg LIB_DIR="$lib_dir" \
+        -t  "autoware:ciim$image_name_suffix" \
+        -f "$SCRIPT_DIR/Dockerfile" \
+        "$WORKSPACE_ROOT"
+
     set +x
+
+
 }
 
 # Remove dangling images
@@ -160,10 +134,9 @@ remove_dangling_images() {
 # Main script execution
 parse_arguments "$@"
 set_cuda_options
-set_build_options
 set_platform
 set_arch_lib_dir
 load_env
 clone_repositories
-build_images
+build_image
 remove_dangling_images
