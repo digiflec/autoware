@@ -55,7 +55,7 @@ repositories:
   ciim/ciim_perception:
     type: git
     url: git@github.com:digiflec/ciim_perception.git
-    version: staging
+    version: develop
     recursive: true
 
   # TODO: Is adding ouster-ros here a good option?
