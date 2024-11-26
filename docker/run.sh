@@ -29,7 +29,6 @@ DEFAULT_LAUNCH_CMD="ros2 launch autoware_launch autoware.launch.xml map_path:=/a
 # Function to print help message
 print_help() {
     echo -e "\n------------------------------------------------------------"
-    echo -e "${RED}Note:${NC} The --map-path option is mandatory for the runtime. For development environment with shell access, use --devel option."
     echo -e "      Default launch command: ${GREEN}${DEFAULT_LAUNCH_CMD}${NC}"
     echo -e "------------------------------------------------------------"
     echo -e "${RED}Usage:${NC} run.sh [OPTIONS] [LAUNCH_CMD](optional)"
@@ -60,12 +59,11 @@ parse_arguments() {
         --headless)
             option_headless=true
             ;;
+        --aws)
+            option_aws=true
+            ;;
         --workspace)
             WORKSPACE_PATH="$2"
-            shift
-            ;;
-        --map-path)
-            MAP_PATH="$2"
             shift
             ;;
         --*)
@@ -91,7 +89,7 @@ parse_arguments() {
 set_variables() {
     if [ "$option_devel" = "true" ]; then
         # Set image based on option
-        IMAGE="autoware:universe-devel-ciim"
+        IMAGE="autoware:ciim"
 
         # Set workspace path, if not provided use the current directory
         if [ "$WORKSPACE_PATH" = "" ]; then
@@ -102,29 +100,15 @@ set_variables() {
         # Set user ID and group ID to match the local user
         USER_ID="-e LOCAL_UID=$(id -u) -e LOCAL_GID=$(id -g) -e LOCAL_USER=$(id -un) -e LOCAL_GROUP=$(id -gn)"
 
-        # Set map path
-        if [ "$MAP_PATH" != "" ]; then
-            MAP="-v ${MAP_PATH}:/autoware_map:ro"
-        fi
-
         # Set launch command
         if [ "$LAUNCH_CMD" = "" ]; then
             LAUNCH_CMD="/bin/bash"
         fi
     else
         # Set image based on option
-        IMAGE="ghcr.io/autowarefoundation/autoware:universe"
+        IMAGE="autoware:ciim"
         echo "Only devel is implemented"
         exit 1
-        # Set map path
-        if [ "$MAP_PATH" = "" ]; then
-            echo -e "\n------------------------------------------------------------"
-            echo -e "${RED}Note:${NC} The --map-path option is mandatory for the universe(runtime image). For development environment with shell access, use --devel option."
-            echo -e "------------------------------------------------------------"
-            exit 1
-        else
-            MAP="-v ${MAP_PATH}:/autoware_map:ro"
-        fi
 
         # Set default launch command if not provided
         if [ "$LAUNCH_CMD" = "" ]; then
@@ -153,7 +137,12 @@ set_x_display() {
 }
 
 # Pass AWS Credentials
-AWS="-v ${HOME}/.aws:/root/.aws"
+mount_aws_credentials() {
+    MOUNT_AWS=""
+    if [ "$option_aws" = true ]; then
+        MOUNT_AWS="-v ${HOME}/.aws:/root/.aws"
+    fi
+}
 # Main script execution
 main() {
     # Parse arguments
@@ -161,6 +150,7 @@ main() {
     set_variables
     set_gpu_flag
     set_x_display
+    mount_aws_credentials
 
     if [ "$option_devel" = "true" ]; then
         echo -e "${GREEN}-----------------------------------------------------------------${NC}"
@@ -181,7 +171,7 @@ main() {
 
     # Launch the container
     set -x
-    docker run -it --rm --net=host ${GPU_FLAG} ${MOUNT_X} ${AWS}\
+    docker run -it --rm --net=host ${GPU_FLAG} ${MOUNT_X} ${MOUNT_AWS}\
         -e XAUTHORITY=${XAUTHORITY} -e XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR -e NVIDIA_DRIVER_CAPABILITIES=all -v /etc/localtime:/etc/localtime:ro \
         ${WORKSPACE} ${MAP} ${IMAGE} \
         ${LAUNCH_CMD}
